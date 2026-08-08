@@ -1,0 +1,218 @@
+---
+title: "GSE47552 Microarray Analysis"
+author: "Popoola Abdulgafar"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# GSE47552 Microarray Analysis
+
+## 1. Introduction
+
+This project analyzes the GSE47552 gene-expression dataset to identify genes that are differentially expressed between Multiple Myeloma (MM) plasma cells and Normal Plasma Cells (NPC).
+
+The analysis includes differential expression analysis, visualization of expression patterns, principal component analysis (PCA), heatmap analysis, and functional enrichment using Gene Ontology (GO) and KEGG pathways.
+
+## 2. Dataset
+
+The dataset was obtained from the Gene Expression Omnibus (GEO) using the GEOquery package.
+
+The analysis focuses on the comparison between Multiple Myeloma (MM) plasma cells and Normal Plasma Cells (NPC).
+
+## 3. Load packages and data
+
+```{r setup}
+library(GEOquery)
+library(limma)
+library(ggplot2)
+library(pheatmap)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+
+gse <- getGEO("GSE47552")
+
+expr <- exprs(gse[[1]])
+pheno <- pData(gse[[1]])
+
+dim(expr)
+```
+## 4. Sample metadata
+
+The sample metadata were examined to identify the biological groups represented in the dataset.
+
+```{r metadata}
+metadata <- data.frame(
+  Sample = rownames(pheno),
+  Group = pheno$`cell type:ch1`
+)
+
+table(metadata$Group)
+head(metadata)
+```
+## 5. Differential expression: MM versus NPC
+
+For the differential-expression analysis, Multiple Myeloma (MM) plasma cells were compared with Normal Plasma Cells (NPC). The analysis was performed using the `limma` package, which is appropriate for microarray expression data.
+
+```{r differential-expression}
+keep <- metadata$Group %in% c(
+  "Multiple Myeloma (MM) plasma cells",
+  "Normal Plama Cells (NPC)"
+)
+
+expr_sub <- expr[, keep]
+meta_sub <- metadata[keep, ]
+
+meta_sub$Group <- factor(
+  meta_sub$Group,
+  levels = c(
+    "Normal Plama Cells (NPC)",
+    "Multiple Myeloma (MM) plasma cells"
+  )
+)
+
+design <- model.matrix(~0 + meta_sub$Group)
+colnames(design) <- c("NPC", "MM")
+
+fit <- lmFit(expr_sub, design)
+
+contrast.matrix <- makeContrasts(
+  MMvsNPC = MM - NPC,
+  levels = design
+)
+
+fit2 <- contrasts.fit(fit, contrast.matrix)
+fit2 <- eBayes(fit2)
+
+results <- topTable(
+  fit2,
+  coef = "MMvsNPC",
+  number = Inf,
+  adjust.method = "BH"
+)
+
+head(results)
+```
+## 6. Volcano plot
+
+A volcano plot was used to visualize the relationship between statistical significance and magnitude of differential expression. The x-axis represents log fold change, while the y-axis represents the negative log10-transformed P-value.
+
+```{r volcano}
+results$Significant <- ifelse(
+  results$adj.P.Val < 0.05 & abs(results$logFC) > 1,
+  "Significant",
+  "Not significant"
+)
+
+ggplot(results, aes(x = logFC, y = -log10(P.Value))) +
+  geom_point(aes(color = Significant), alpha = 0.6) +
+  theme_minimal() +
+  labs(
+    title = "Volcano Plot: MM vs NPC",
+    x = "log2 Fold Change",
+    y = "-log10(P-value)"
+  )
+```
+## 7. Principal Component Analysis (PCA)
+
+Principal component analysis was used to visualize the overall structure of the gene-expression data and assess whether MM and NPC samples show separation based on their global expression profiles.
+
+```{r PCA}
+pca <- prcomp(t(expr_sub), scale. = TRUE)
+
+pca_data <- data.frame(
+  PC1 = pca$x[, 1],
+  PC2 = pca$x[, 2],
+  Group = meta_sub$Group
+)
+
+ggplot(pca_data, aes(x = PC1, y = PC2, color = Group)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "PCA of MM and NPC Samples",
+    x = "PC1",
+    y = "PC2"
+  )
+```
+## 8. Heatmap of differentially expressed genes
+
+A heatmap was used to visualize the expression patterns of selected differentially expressed genes across the MM and NPC samples.
+
+```{r heatmap}
+sig_genes <- results[
+  results$adj.P.Val < 0.05 & abs(results$logFC) > 1,
+]
+
+top_genes <- rownames(sig_genes)[1:min(50, nrow(sig_genes))]
+
+heatmap_data <- expr_sub[top_genes, ]
+
+pheatmap(
+  heatmap_data,
+  scale = "row",
+  show_rownames = FALSE,
+  annotation_col = data.frame(
+    Group = meta_sub$Group
+  )
+)
+```
+## 9. Gene Ontology (GO) enrichment
+
+Gene Ontology enrichment was performed to identify biological processes and molecular functions associated with the differentially expressed genes.
+
+```{r GO-enrichment}
+# Extract significant probe IDs
+sig_probe <- rownames(sig_genes)
+
+# Map probes to gene symbols using the GPL annotation
+gene_assignment <- gpl_table$gene_assignment[
+  match(sig_probe, gpl_table$ID)
+]
+
+# Extract gene symbols
+gene_symbols <- sapply(
+  strsplit(gene_assignment, "///"),
+  function(x) {
+    if (length(x) == 0 || x[1] == "---") return(NA)
+
+    parts <- trimws(strsplit(x[1], "//", fixed = TRUE)[[1]])
+
+    if (length(parts) >= 2) parts[2] else NA
+  }
+)
+
+gene_symbols <- unique(na.omit(gene_symbols))
+
+# Convert gene symbols to Entrez IDs
+gene_ids <- bitr(
+  gene_symbols,
+  fromType = "SYMBOL",
+  toType = "ENTREZID",
+  OrgDb = org.Hs.eg.db
+)
+
+# GO enrichment
+ego <- enrichGO(
+  gene = gene_ids$ENTREZID,
+  OrgDb = org.Hs.eg.db,
+  keyType = "ENTREZID",
+  ont = "BP",
+  pAdjustMethod = "BH",
+  readable = TRUE
+)
+
+dotplot(ego, showCategory = 20)
+```
+## 10. KEGG pathway enrichment
+
+KEGG enrichment was used to identify biological pathways represented among the differentially expressed genes.
+
+```{r KEGG-enrichment}
+ekegg <- enrichKEGG(
+  gene = gene_ids$ENTREZID,
+  organism = "hsa",
+  pAdjustMethod = "BH"
+)
+
+dotplot(ekegg, showCategory = 20)
+```
