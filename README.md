@@ -1,143 +1,307 @@
-# GSE47552 Microarray Gene Expression Analysis
+GSE47552 Microarray Gene Expression Analysis
 
-## Project Overview
+Project Overview
 
 This project analyzes the GSE47552 gene-expression dataset from the Gene Expression Omnibus (GEO).
 
-The analysis focuses on differences in gene expression between Multiple Myeloma (MM) plasma cells and Normal Plasma Cells (NPC).
+The analysis investigates differences in gene expression between Multiple Myeloma (MM) plasma cells and Normal Plasma Cells (NPC) using the "limma" package in R.
 
-## Biological Question
+Following differential-expression analysis, the significant genes were investigated using Gene Ontology (GO), KEGG, and Reactome pathway analysis to identify biological processes and pathways associated with the observed gene-expression changes.
 
-The main objective is to identify genes that are dysregulated in Multiple Myeloma compared with normal plasma cells and to investigate the biological pathways associated with these changes.
+---
 
-## Dataset
+Biological Question
 
-- **GEO accession:** GSE47552
-- **Data type:** Microarray gene-expression data
-- **Comparison:** Multiple Myeloma (MM) vs Normal Plasma Cells (NPC)
+Which genes are differentially expressed between Multiple Myeloma (MM) and Normal Plasma Cells (NPC), and what biological pathways are associated with these changes?
 
-The original dataset contains four biological groups:
+---
+
+Dataset
+
+- GEO accession: GSE47552
+- Data type: Microarray gene-expression data
+- Comparison: Multiple Myeloma (MM) vs Normal Plasma Cells (NPC)
+- Analysis method: "limma"
+
+The original GSE47552 dataset contains four biological groups:
 
 - Monoclonal Gammopathy of Undetermined Significance (MGUS)
 - Multiple Myeloma (MM)
 - Normal Plasma Cells (NPC)
 - Smoldering Multiple Myeloma (SMM)
 
-For the differential-expression analysis, MM and NPC samples were selected.
+For this analysis, MM and NPC samples were selected for differential-expression analysis.
 
-## Analysis Pipeline
+---
 
-The analysis included:
+Analysis Workflow
 
-1. Data acquisition using GEOquery
-2. Examination of sample metadata
-3. Selection of MM and NPC samples
-4. Differential-expression analysis using limma
-5. Volcano plot
-6. Heatmap
-7. Principal Component Analysis (PCA)
-8. Gene Ontology (GO) enrichment
-9. KEGG pathway enrichment
-10. Biological interpretation of the significant genes and pathways
+The project follows this workflow:
 
-## Main Figures
+GEO dataset (GSE47552)
+        ↓
+Data acquisition with GEOquery
+        ↓
+Sample metadata examination
+        ↓
+Selection of MM and NPC samples
+        ↓
+Differential-expression analysis with limma
+        ↓
+Differentially Expressed Genes (DEGs)
+        ↓
+ ┌───────────────┬────────────────┬─────────────────┐
+ ↓ ↓ ↓
+GO enrichment KEGG enrichment Reactome enrichment
+                                   ↓
+                            Biological interpretation
 
-### Volcano Plot
+---
+
+Analysis Performed
+
+1. Data Acquisition
+
+The GSE47552 dataset was obtained from GEO using the "GEOquery" package.
+
+2. Differential Expression Analysis
+
+Differential expression between MM and NPC samples was performed using limma.
+
+The analysis produced statistics including:
+
+- log fold change ("logFC")
+- p-value
+- adjusted p-value ("adj.P.Val")
+
+Genes with an adjusted p-value below the selected significance threshold were considered significant.
+
+3. Data Visualization
+
+The project includes:
+
+- Volcano plot
+- Heatmap
+- Principal Component Analysis (PCA)
+
+These visualizations were used to examine differential expression, expression patterns, and sample-level structure.
+
+4. Gene Ontology Enrichment
+
+GO enrichment analysis was performed to identify biological processes and functional categories represented among the significant genes.
+
+5. KEGG Pathway Enrichment
+
+KEGG pathway enrichment was performed to identify biological pathways associated with the significant genes.
+
+A KEGG enrichment dot plot is included in the project results.
+
+6. Reactome Pathway Enrichment
+
+Reactome pathway enrichment was performed using ReactomePA on the significant genes from the differential-expression analysis.
+
+The analysis identified 50 enriched Reactome pathways under the selected enrichment criteria.
+
+The resulting enrichment was visualized using a Reactome dot plot.
+
+7. KEGG REST API Demonstration
+
+The project also includes a separate demonstration of retrieving pathway information from the KEGG REST API using Python.
+
+The human colorectal cancer pathway:
+
+hsa05210
+
+was retrieved from KEGG.
+
+This is included as a KEGG REST API exercise and should not be interpreted as a conclusion that colorectal cancer was discovered from the GSE47552 analysis.
+
+---
+
+Main Results and Figures
+
+Volcano Plot
 
 The volcano plot displays the magnitude and statistical significance of gene-expression changes between MM and NPC samples.
 
-![Volcano plot](results/Volcano_MM_vs_NPC.png)
+"Volcano Plot" (Results/Volcano_MM_vs_NPC.png)
 
-### Heatmap
+Heatmap
 
-The heatmap shows expression patterns of selected differentially expressed genes across the samples.
+The heatmap shows expression patterns of selected differentially expressed genes across the analyzed samples.
 
-![Heatmap](results/Heatmap_MM_vs_NPC.png)
+"Heatmap" (Results/Heatmap_MM_vs_NPC.png)
 
-### PCA
+Principal Component Analysis
 
 PCA was used to examine the overall structure of the expression data and visualize separation between MM and NPC samples.
 
-![PCA](results/PCA_MM_vs_NPC.png)
+"PCA" (Results/PCA_MM_vs_NPC.png)
 
+GO Enrichment
 
-### GO Enrichment
+GO enrichment was used to identify biological processes and functional categories associated with the significant genes.
 
-Gene Ontology enrichment was used to identify biological processes associated with the differentially expressed genes.
+"GO Dotplot" (Results/GO_dotplot_MM_vs_NPC.png)
 
-![GO dotplot](results/GO_dotplot_MM_vs_NPC.png)
+KEGG Enrichment
 
-### KEGG Enrichment
+KEGG enrichment was used to identify biological pathways associated with the significant genes.
 
-KEGG enrichment was used to identify biological pathways associated with the differentially expressed genes.
+"KEGG Dotplot" (Results/KEGG_dotplot_MM_vs_NPC.png)
 
-![KEGG dotplot](results/KEGG_dotplot_MM_vs_NPC.png)
+Reactome Enrichment
 
-## Biological Interpretation
+Reactome pathway enrichment was performed using ReactomePA.
+
+The resulting dot plot summarizes the enriched Reactome pathways.
+
+"Reactome Enrichment" (Results/reactome_enrichment.png)
+
+---
+
+Biological Interpretation
 
 The differential-expression analysis identified genes that were significantly dysregulated between Multiple Myeloma and Normal Plasma Cells.
 
-The identified genes were further examined in the context of enriched GO terms and KEGG pathways to understand their potential biological relevance to plasma-cell biology and Multiple Myeloma.
+The significant genes were subsequently investigated using GO, KEGG, and Reactome pathway enrichment to identify biological processes and pathways associated with the observed expression changes.
 
-The top differentially expressed genes and enriched pathways were compared with findings reported in the original study to determine whether the present analysis showed biological patterns consistent with the published work.
+The enrichment analyses provide additional biological context beyond the individual differentially expressed genes.
 
-A detailed interpretation is provided in:
+A detailed interpretation of the findings is provided in:
 
-`report/interpretation.md`
+Report/interpretation.md
 
-## Reproducibility
+---
 
-The main analysis code is provided in:
+KEGG REST API
 
-`deseq2analysis.R`
+The project includes a small Python-based KEGG REST API exercise.
 
-The complete analysis notebook is provided in:
+The following pathway was retrieved:
 
-`notebook/GSE47552_analysis.Rmd`
+hsa05210 — Colorectal cancer
 
-The project pipeline is provided in:
+The relevant files are stored in:
 
-`pipeline.sh`
+KEGG/
+├── hsa05210.txt
+└── kegg_retrieval.py
 
-To reproduce the differential-expression analysis, run:
+The "hsa05210.txt" file contains the pathway information retrieved from KEGG, while "kegg_retrieval.py" contains the Python code used to access the KEGG REST API.
 
-```bash
-bash pipeline.sh
+---
 
-## Project Structure
+Project Structure
 
-```text
 GSE47552-project/
 │
 ├── README.md
+├── GSE47552_GitHub.Rproj
 ├── deseq2analysis.R
 ├── pipeline.sh
 │
-├── notebook/
-│   └── GSE47552_analysis.Rmd
+├── Notebook/
+│ └── GSE47552_analysis.Rmd
 │
-├── report/
-│   ├── methods.md
-│   ├── results.md
-│   └── interpretation.md
+├── Report/
+│ ├── methods.md
+│ ├── results.md
+│ └── interpretation.md
 │
-└── results/
-    ├── volcano.png
-    ├── heatmap.png
-    ├── PCA.png
-    ├── GO_dotplot.png
-    └── KEGG_dotplot.png
-    
- Software
+├── Results/
+│ ├── Volcano_MM_vs_NPC.png
+│ ├── Heatmap_MM_vs_NPC.png
+│ ├── PCA_MM_vs_NPC.png
+│ ├── GO_dotplot_MM_vs_NPC.png
+│ ├── KEGG_dotplot_MM_vs_NPC.png
+│ └── reactome_enrichment.png
+│
+└── KEGG/
+    ├── hsa05210.txt
+    └── kegg_retrieval.py
 
-The analysis was performed in R using packages including:
+«Note: The file "deseq2analysis.R" is retained as part of the existing project structure. The GSE47552 differential-expression analysis itself was performed using limma, not DESeq2.»
 
-GEOquery
-limma
-ggplot2
-pheatmap
-clusterProfiler
-org.Hs.eg.db
+---
+
+Reproducibility
+
+The main R analysis code is provided in:
+
+deseq2analysis.R
+
+The complete analysis notebook is provided in:
+
+Notebook/GSE47552_analysis.Rmd
+
+The project pipeline is provided in:
+
+pipeline.sh
+
+The KEGG REST API demonstration is provided in:
+
+KEGG/kegg_retrieval.py
+
+The Reactome enrichment was performed using the "ReactomePA" package.
+
+---
+
+Software and Packages
+
+The analysis was performed using R and Python.
+
+R Packages
+
+- GEOquery
+- limma
+- ggplot2
+- pheatmap
+- clusterProfiler
+- ReactomePA
+- reactome.db
+- org.Hs.eg.db
+
+Python
+
+- requests
+
+---
+
+Key Skills Demonstrated
+
+This project demonstrates practical experience with:
+
+- Microarray gene-expression analysis
+- GEO data retrieval
+- Sample metadata handling
+- Differential-expression analysis with limma
+- Data visualization in R
+- Volcano plots
+- Heatmaps
+- PCA
+- Gene Ontology enrichment
+- KEGG pathway enrichment
+- Reactome pathway enrichment
+- ReactomePA
+- KEGG REST API
+- Python API requests
+- Reproducible analysis workflows
+- Git/GitHub project organization
+
+---
+
+Reference
+
+The original publication associated with GSE47552 is cited in the project report.
+
+For pathway resources, the analysis uses:
+
+- KEGG
+- Reactome
+- Gene Ontology
+
+Detailed references are provided in the project report.
 Reference
 
 The original publication associated with GSE47552 is cited in the project report.   
